@@ -12,10 +12,9 @@ type binary []bool
 func (b binary) String() string {
 	output := ""
 	for _, v := range b {
-		switch v {
-		case true:
+		if v {
 			output = fmt.Sprintf("%s1", output)
-		default:
+		} else {
 			output = fmt.Sprintf("%s0", output)
 		}
 	}
@@ -44,10 +43,9 @@ func calulateGamma(binaries []binary) binary {
 	for i := 0; i < len(binaries[0]); i++ {
 		counterOne, counterZero := 0, 0
 		for j := 0; j < len(binaries); j++ {
-			switch binaries[j][i] {
-			case true:
+			if binaries[j][i] {
 				counterOne++
-			default:
+			} else {
 				counterZero++
 			}
 		}
@@ -75,10 +73,9 @@ func loadInput(path string) ([]binary, error) {
 		line := scanner.Text()
 		b := make(binary, 0)
 		for _, r := range line {
-			switch r {
-			case '0':
+			if r == '0' {
 				b = append(b, false)
-			default:
+			} else {
 				b = append(b, true)
 			}
 		}
