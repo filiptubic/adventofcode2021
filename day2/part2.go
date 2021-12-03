@@ -37,6 +37,7 @@ func loadInput(path string) ([]action, error) {
 	}
 	return input, nil
 }
+
 func main() {
 	actions, err := loadInput("input.txt")
 	if err != nil {
