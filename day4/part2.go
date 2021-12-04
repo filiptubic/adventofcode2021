@@ -114,12 +114,10 @@ func findWinner(bingoNumbers []int, tables [][][]Number) ([][]Number, int) {
 
 	for _, bingoNumber := range bingoNumbers {
 		for tblIndex, table := range tables {
-			if _, ok := winners[tblIndex]; !ok {
-				if play(table, bingoNumber) {
-					winners[tblIndex] = struct{}{}
-					if len(winners) == len(tables) {
-						return table, bingoNumber
-					}
+			if _, ok := winners[tblIndex]; !ok && play(table, bingoNumber) {
+				winners[tblIndex] = struct{}{}
+				if len(winners) == len(tables) {
+					return table, bingoNumber
 				}
 			}
 		}
