@@ -47,9 +47,7 @@ func evolve(number, current, depth int, done map[int]map[int]int) int {
 	}
 
 	if number == 0 {
-		left := evolve(6, current+1, depth, done)
-		right := evolve(8, current+1, depth, done)
-		done[current][number] = left + right
+		done[current][number] = evolve(6, current+1, depth, done) + evolve(8, current+1, depth, done)
 		return done[current][number]
 	}
 
@@ -58,11 +56,10 @@ func evolve(number, current, depth int, done map[int]map[int]int) int {
 }
 
 func main() {
-	args := os.Args
 	if len(os.Args) == 1 {
 		log.Fatalf("missing argument days")
 	}
-	days, err := strconv.Atoi(args[1])
+	days, err := strconv.Atoi(os.Args[1])
 	if err != nil {
 		panic(err)
 	}
