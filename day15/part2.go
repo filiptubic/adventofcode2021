@@ -78,14 +78,14 @@ func loadInput(path string) ([][]int, error) {
 func makeGraph(m [][]int) ([]*Node, map[*Node]map[*Node]int) {
 	nodes := make([]*Node, 0)
 
-	nodeM := make([][]*Node, 0)
+	nodeMap := make([][]*Node, 0)
 	for i := 0; i < len(m); i++ {
 		row := make([]*Node, 0)
 		for j := 0; j < len(m[i]); j++ {
 			nodes = append(nodes, &Node{i: i, j: j})
 			row = append(row, nodes[len(nodes)-1])
 		}
-		nodeM = append(nodeM, row)
+		nodeMap = append(nodeMap, row)
 	}
 
 	weights := make(map[*Node]map[*Node]int)
@@ -97,23 +97,23 @@ func makeGraph(m [][]int) ([]*Node, map[*Node]map[*Node]int) {
 
 		if nodes[i].j+1 < len(m[nodes[i].i]) {
 			weightRight := m[nodes[i].i][nodes[i].j+1]
-			to := nodeM[nodes[i].i][nodes[i].j+1]
+			to := nodeMap[nodes[i].i][nodes[i].j+1]
 			weights[nodes[i]][to] = weightRight
 		}
 		if nodes[i].j-1 >= 0 {
 			weightLeft := m[nodes[i].i][nodes[i].j-1]
-			to := nodeM[nodes[i].i][nodes[i].j-1]
+			to := nodeMap[nodes[i].i][nodes[i].j-1]
 			weights[nodes[i]][to] = weightLeft
 		}
 
 		if nodes[i].i-1 >= 0 {
 			weightTop := m[nodes[i].i-1][nodes[i].j]
-			to := nodeM[nodes[i].i-1][nodes[i].j]
+			to := nodeMap[nodes[i].i-1][nodes[i].j]
 			weights[nodes[i]][to] = weightTop
 		}
 		if nodes[i].i+1 < len(m) {
 			weightBottom := m[nodes[i].i+1][nodes[i].j]
-			to := nodeM[nodes[i].i+1][nodes[i].j]
+			to := nodeMap[nodes[i].i+1][nodes[i].j]
 			weights[nodes[i]][to] = weightBottom
 		}
 	}
@@ -168,40 +168,29 @@ func dijkstraPriorityQueue(nodes []*Node, weights map[*Node]map[*Node]int) (map[
 	dist := make(map[*Node]int)
 	prev := make(map[*Node]*Node)
 	dist[nodes[0]] = 0
+	for _, node := range nodes[1:] {
+		dist[node] = math.MaxInt64
+	}
 
-	pq := make(PriorityQueue, len(nodes))
-
-	pq[0] = &Item{
+	pq := make(PriorityQueue, 0)
+	heap.Push(&pq, &Item{
 		value:    nodes[0],
 		priority: 0,
-	}
-	pqMap := make(map[*Node]*Item)
-	pqMap[nodes[0]] = pq[0]
-
-	for idx, node := range nodes[1:] {
-		dist[node] = math.MaxInt64
-		pq[idx+1] = &Item{
-			value:    node,
-			priority: math.MaxInt64,
-		}
-		pqMap[node] = pq[idx+1]
-	}
+	})
 	heap.Init(&pq)
 
 	for pq.Len() > 0 {
-		item := heap.Pop(&pq).(*Item)
-		u := item.value
+		current := heap.Pop(&pq).(*Item).value
 
-		for v, cost := range weights[u] {
-			alt := math.MaxInt64
-			if dist[u] != math.MaxInt64 {
-				alt = dist[u] + cost
-			}
-
-			if alt < dist[v] {
-				dist[v] = alt
-				prev[v] = u
-				heap.Push(&pq, &Item{value: v, priority: dist[v]})
+		for neighbour, cost := range weights[current] {
+			costThroughCurrent := dist[current] + cost
+			if costThroughCurrent < dist[neighbour] {
+				dist[neighbour] = costThroughCurrent
+				prev[neighbour] = current
+				heap.Push(&pq, &Item{
+					value:    neighbour,
+					priority: dist[neighbour],
+				})
 			}
 		}
 	}

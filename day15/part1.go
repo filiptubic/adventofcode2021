@@ -44,14 +44,14 @@ func loadInput(path string) ([][]int, error) {
 func makeGraph(m [][]int) ([]*Node, map[*Node]map[*Node]int) {
 	nodes := make([]*Node, 0)
 
-	nodeM := make([][]*Node, 0)
+	nodeMap := make([][]*Node, 0)
 	for i := 0; i < len(m); i++ {
 		row := make([]*Node, 0)
 		for j := 0; j < len(m[i]); j++ {
 			nodes = append(nodes, &Node{i: i, j: j})
 			row = append(row, nodes[len(nodes)-1])
 		}
-		nodeM = append(nodeM, row)
+		nodeMap = append(nodeMap, row)
 	}
 
 	weights := make(map[*Node]map[*Node]int)
@@ -63,23 +63,23 @@ func makeGraph(m [][]int) ([]*Node, map[*Node]map[*Node]int) {
 
 		if nodes[i].j+1 < len(m[nodes[i].i]) {
 			weightRight := m[nodes[i].i][nodes[i].j+1]
-			to := nodeM[nodes[i].i][nodes[i].j+1]
+			to := nodeMap[nodes[i].i][nodes[i].j+1]
 			weights[nodes[i]][to] = weightRight
 		}
 		if nodes[i].j-1 >= 0 {
 			weightLeft := m[nodes[i].i][nodes[i].j-1]
-			to := nodeM[nodes[i].i][nodes[i].j-1]
+			to := nodeMap[nodes[i].i][nodes[i].j-1]
 			weights[nodes[i]][to] = weightLeft
 		}
 
 		if nodes[i].i-1 >= 0 {
 			weightTop := m[nodes[i].i-1][nodes[i].j]
-			to := nodeM[nodes[i].i-1][nodes[i].j]
+			to := nodeMap[nodes[i].i-1][nodes[i].j]
 			weights[nodes[i]][to] = weightTop
 		}
 		if nodes[i].i+1 < len(m) {
 			weightBottom := m[nodes[i].i+1][nodes[i].j]
-			to := nodeM[nodes[i].i+1][nodes[i].j]
+			to := nodeMap[nodes[i].i+1][nodes[i].j]
 			weights[nodes[i]][to] = weightBottom
 		}
 	}
@@ -95,7 +95,7 @@ func isIn(node *Node, nodes []*Node) bool {
 	return false
 }
 
-func dijkstraList(nodes []*Node, weights map[*Node]map[*Node]int) map[*Node]int {
+func dijkstraList(nodes []*Node, weights map[*Node]map[*Node]int) (map[*Node]int, map[*Node]*Node) {
 	q := make([]*Node, 0)
 	dist := make(map[*Node]int)
 	prev := make(map[*Node]*Node)
@@ -108,11 +108,11 @@ func dijkstraList(nodes []*Node, weights map[*Node]map[*Node]int) map[*Node]int 
 	dist[nodes[0]] = 0
 
 	for len(q) > 0 {
-		u := q[0]
+		current := q[0]
 		minIndex := 0
 		for i := 1; i < len(q); i++ {
-			if dist[q[i]] < dist[u] {
-				u = q[i]
+			if dist[q[i]] < dist[current] {
+				current = q[i]
 				minIndex = i
 			}
 		}
@@ -122,20 +122,20 @@ func dijkstraList(nodes []*Node, weights map[*Node]map[*Node]int) map[*Node]int 
 			q = q[:minIndex]
 		}
 
-		for v, cost := range weights[u] {
-			if !isIn(v, q) {
+		for neighbour, cost := range weights[current] {
+			if !isIn(neighbour, q) {
 				continue
 			}
 
-			alt := dist[u] + cost
+			costThroughCurrent := dist[current] + cost
 
-			if alt < dist[v] {
-				dist[v] = alt
-				prev[v] = u
+			if costThroughCurrent < dist[neighbour] {
+				dist[neighbour] = costThroughCurrent
+				prev[neighbour] = current
 			}
 		}
 	}
-	return dist
+	return dist, prev
 }
 
 func main() {
@@ -145,7 +145,7 @@ func main() {
 	}
 	nodes, weights := makeGraph(m)
 	last := nodes[len(nodes)-1]
-	dist := dijkstraList(nodes, weights)
+	dist, _ := dijkstraList(nodes, weights)
 
 	fmt.Println(dist[last])
 }
