@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -42,27 +41,6 @@ type Tuple2 struct {
 
 func (t Tuple2) String() string {
 	return fmt.Sprintf("(%d, %d)", t.i, t.j)
-}
-
-type ByTuple2 []Tuple2
-
-func (a ByTuple2) Len() int {
-	return len(a)
-}
-func (a ByTuple2) Swap(i, j int) {
-	a[i], a[j] = a[j], a[i]
-}
-func (a ByTuple2) Less(i, j int) bool {
-	if a[i].i < a[j].i {
-		return true
-	}
-	if a[i].i == a[j].i {
-		if a[i].j < a[j].j {
-			return true
-		}
-		return false
-	}
-	return false
 }
 
 func maxInt(x, y int) int {
@@ -145,8 +123,6 @@ func enhance(image map[Tuple2]string, algorithm, pixel string) map[Tuple2]string
 	for k := range image {
 		keys = append(keys, k)
 	}
-	// keys inside map are not sorted by coords
-	sort.Sort(ByTuple2(keys))
 
 	for _, t := range keys {
 		pixelsArray := []string{
